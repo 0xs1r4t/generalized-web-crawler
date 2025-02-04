@@ -1,3 +1,7 @@
+# AWS Lambda Python config
+lambda_package/*
+!lambda_package/lambda_function.py
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
