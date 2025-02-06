@@ -2,6 +2,18 @@
 lambda_package/*
 !lambda_package/lambda_function.py
 
+# Alembic
+alembic/versions/*
+!alembic/versions/.gitkeep
+
+# Database
+*.db
+*.sqlite
+*.sqlite3
+
+# Custom test files
+test_*.py
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
@@ -91,6 +103,8 @@ ipython_config.py
 #   intended to run in multiple environments; otherwise, check them in:
 # .python-version
 web_env/
+venv/
+ENV/
 
 # pipenv
 #   According to pypa/pipenv#598, it is recommended to include Pipfile.lock in version control.

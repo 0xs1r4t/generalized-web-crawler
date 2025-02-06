@@ -21,5 +21,9 @@ app.add_middleware(
 async def root():
     return {"message": "Hello World"}
 
+@app.get("/proxy")
+async def proxy():
+    return {"status": "ok", "message": "Proxy endpoint"}
+
 if __name__ == "__main__":
     uvicorn.run("main:app", host="0.0.0.0", port=1234, reload=True)
