@@ -1,6 +1,7 @@
 from pydantic import BaseModel
 from typing import Optional
 
+
 class ProductBase(BaseModel):
     domain: str
     product_url: str
@@ -10,6 +11,7 @@ class ProductBase(BaseModel):
     product_brand: Optional[str] = None
     product_price: Optional[int] = None
     product_image_url: Optional[str] = None
+
 
 class Product(ProductBase):
     id: int
