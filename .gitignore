@@ -1,10 +1,16 @@
 # AWS Lambda Python config
 lambda_package/*
 !lambda_package/lambda_function.py
+lambda_layer/
+lambda_function.zip
 
 # Alembic
 alembic/versions/*
 !alembic/versions/.gitkeep
+
+# Docker (only temporary)
+Dockerfile
+docker-compose.yml
 
 # Database
 *.db

@@ -1,32 +1,44 @@
+import logging
 from fastapi import FastAPI
-import uvicorn
+from app.db.session import init_db
+from app.api.routes import crawler, health, product, proxy
 
-from fastapi.middleware.cors import CORSMiddleware
 
-app = FastAPI()
-
-origins = [
-    "http://localhost:1234",
-]
-
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=origins,
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+# Configure logging
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+    handlers=[logging.StreamHandler(), logging.FileHandler("crawler.log")],
 )
 
-
-@app.get("/")
-async def root():
-    return {"message": "Hello World"}
+logger = logging.getLogger(__name__)
 
 
-@app.get("/proxy")
-async def proxy():
-    return {"status": "ok", "message": "Proxy endpoint"}
+app = FastAPI(title="E-commerce Crawler API")
+
+# Include routers
+app.include_router(crawler.router)
+app.include_router(product.router)
+app.include_router(proxy.router)
+app.include_router(health.router)
 
 
-if __name__ == "__main__":
-    uvicorn.run("main:app", host="0.0.0.0", port=1234, reload=True)
+@app.on_event("startup")
+async def startup_event():
+    logger.info("Starting application...")
+    try:
+        init_db()
+        logger.info("Database initialized successfully")
+    except Exception as e:
+        logger.error(f"Error initializing database: {str(e)}", exc_info=True)
+        raise
+
+
+@app.get("/health")
+async def health_check():
+    logger.info("Health check requested")
+    return {"status": "healthy"}
+
+
+# Runs logging output to the console
+logging.basicConfig(level=logging.DEBUG)
