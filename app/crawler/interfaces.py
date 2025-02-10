@@ -1,11 +1,31 @@
 from abc import ABC, abstractmethod
-from typing import List, Dict, Any
+from typing import List, Dict, Any, Set
 
 
 class IURLProcessor(ABC):
     @abstractmethod
     async def is_product_url(self, url: str) -> bool:
         """Check if a URL is a product URL"""
+        pass
+
+    @abstractmethod
+    async def is_category_url(self, url: str) -> bool:
+        """Check if a URL is a category/collection URL"""
+        pass
+
+    @abstractmethod
+    async def normalize_url(self, url: str, base_domain: str) -> str:
+        """Normalize URL to full path with domain"""
+        pass
+
+    @abstractmethod
+    async def extract_urls_from_page(self, page: Any) -> Set[str]:
+        """Extract all URLs from a page"""
+        pass
+
+    @abstractmethod
+    async def filter_urls(self, urls: Set[str], domain: str) -> Dict[str, Set[str]]:
+        """Filter URLs into categories and products"""
         pass
 
 

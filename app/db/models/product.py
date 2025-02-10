@@ -56,6 +56,7 @@ class URLCache(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     url = Column(String, unique=True, index=True)
+    domain = Column(String, index=True)
     first_seen = Column(
         DateTime(timezone=True), default=lambda: datetime.now(timezone.utc)
     )

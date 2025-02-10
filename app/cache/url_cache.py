@@ -2,6 +2,7 @@ import logging
 from sqlalchemy.orm import Session
 from datetime import datetime, timezone
 from app.db.models.product import URLCache as URLCacheModel
+from sqlalchemy import select, update
 
 logger = logging.getLogger(__name__)
 
@@ -13,34 +14,47 @@ class URLCache:
 
     async def is_url_cached(self, url: str) -> bool:
         try:
-            cache_entry = (
-                self.db.query(URLCacheModel).filter(URLCacheModel.url == url).first()
-            )
-            if cache_entry:
-                logger.debug(f"Cache hit for URL: {url}")
-                cache_entry.last_accessed = datetime.now(timezone.utc)
-                cache_entry.access_count += 1
-                self.db.commit()
-                return True
-            logger.debug(f"Cache miss for URL: {url}")
-            return False
+            stmt = select(URLCacheModel).where(URLCacheModel.url == url)
+            result = self.db.execute(stmt).scalar_one_or_none()
+            return result is not None
         except Exception as e:
             logger.error(f"Error checking cache for URL {url}: {str(e)}")
+            self.db.rollback()  # Explicitly rollback on error
             return False
 
-    async def cache_url(self, url: str) -> None:
+    async def cache_url(self, url: str, domain: str) -> None:
         try:
-            logger.debug(f"Caching URL: {url}")
-            cache_entry = URLCacheModel(
-                url=url,
-                first_seen=datetime.now(timezone.utc),
-                last_accessed=datetime.now(timezone.utc),
-            )
-            self.db.add(cache_entry)
+            # Check if URL exists
+            stmt = select(URLCacheModel).where(URLCacheModel.url == url)
+            existing = self.db.execute(stmt).scalar_one_or_none()
+
+            now = datetime.now(timezone.utc)
+
+            if existing:
+                # Update existing entry
+                stmt = (
+                    update(URLCacheModel)
+                    .where(URLCacheModel.url == url)
+                    .values(
+                        domain=domain,
+                        last_accessed=now,
+                        access_count=URLCacheModel.access_count + 1,
+                    )
+                )
+                self.db.execute(stmt)
+            else:
+                # Create new entry
+                cache_entry = URLCacheModel(
+                    url=url, domain=domain, first_seen=now, last_accessed=now
+                )
+                self.db.add(cache_entry)
+
             self.db.commit()
             logger.info(f"Successfully cached URL: {url}")
+
         except Exception as e:
             logger.error(f"Error caching URL {url}: {str(e)}")
+            self.db.rollback()  # Explicitly rollback on error
             raise
 
     async def clear_cache(self) -> None:

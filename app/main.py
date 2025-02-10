@@ -1,7 +1,7 @@
 import logging
 from fastapi import FastAPI
 from app.db.session import init_db
-from app.api.routes import crawler, health, product, proxy
+from app.api.routes import admin, crawler, health, product, proxy
 
 
 # Configure logging
@@ -21,6 +21,7 @@ app.include_router(crawler.router)
 app.include_router(product.router)
 app.include_router(proxy.router)
 app.include_router(health.router)
+app.include_router(admin.router)
 
 
 @app.on_event("startup")

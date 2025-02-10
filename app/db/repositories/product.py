@@ -3,6 +3,7 @@ from typing import List, Optional
 from datetime import datetime, timezone
 from app.db.models.product import Product, CrawlHistory, URLCache
 from app.db.schemas.product import ProductCreate, CrawlHistoryCreate
+from sqlalchemy import select
 
 
 class ProductRepository:
@@ -22,8 +23,11 @@ class ProductRepository:
     def get_product(self, product_id: int) -> Optional[Product]:
         return self.db.query(Product).filter(Product.id == product_id).first()
 
-    def get_product_by_url(self, url: str) -> Optional[Product]:
-        return self.db.query(Product).filter(Product.url == url).first()
+    async def get_product_by_url(self, url: str):
+        """Get product by URL"""
+        query = select(Product).where(Product.url == url)
+        result = await self.db.execute(query)
+        return result.scalar_one_or_none()
 
     def get_products(self, skip: int = 0, limit: int = 100) -> List[Product]:
         return self.db.query(Product).offset(skip).limit(limit).all()
@@ -54,3 +58,7 @@ class ProductRepository:
             .order_by(CrawlHistory.crawled_at.desc())
             .all()
         )
+
+    async def rollback(self):
+        """Rollback the current transaction"""
+        await self.db.rollback()
